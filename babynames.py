@@ -36,6 +36,7 @@ import re
 import argparse
 
 
+
 def extract_names(filename):
     """
     Given a single file name for babyXXXX.html, returns a
@@ -44,8 +45,29 @@ def extract_names(filename):
     ['2006', 'Aaliyah 91', 'Aaron 57', 'Abagail 895', ...]
     """
     names = []
-    # +++your code here+++
-    return names
+    with open(filename) as f:
+        text = f.read()
+
+        find_year = re.search(r'Popularity\sin\s(\d\d\d\d)', text)
+        
+        year = find_year.group(1)
+        names.append(year)
+
+        tuples = re.findall(r'<td>(\d+)</td><td>(\w+)</td>\<td>(\w+)</td>', text)
+
+        ranks = {}
+        for rank, boyname, girlname in tuples:
+            if boyname not in ranks:
+                ranks[boyname] = rank
+            if girlname not in ranks:
+                ranks[girlname] = rank
+
+        sorted_names = sorted(ranks.keys())
+
+        for name in sorted_names:
+            names.append(name + ' ' + ranks[name])
+
+        return names
 
 
 def create_parser():
@@ -82,8 +104,15 @@ def main(args):
     # Use the create_summary flag to decide whether to print the list
     # or to write the list to a summary file (e.g. `baby1990.html.summary`).
 
-    # +++your code here+++
-
-
+    
+    for file in file_list:
+        name_list = extract_names(file)
+        text = '\n'.join(name_list)
+        if create_summary:
+            with open(file + '.summary', 'w') as x:
+                x.write(text + '\n')
+        else:
+            print(text)
+    
 if __name__ == '__main__':
     main(sys.argv[1:])
